@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   ScrollView,
   View,
+  Text,
   Image,
   TouchableHighlight,
   TextInput,
@@ -28,11 +29,6 @@ const Ico = ({ name, uri, color }) => (
 const IcoBtn = ({ onPress, color, ...props }) => {
   const [active, setActive] = useState(false);
 
-  const handlePress = (event) => {
-    setActive(true);
-    onPress(event);
-  };
-
   return (
     <TouchableHighlight
       underlayColor={color}
@@ -45,79 +41,72 @@ const IcoBtn = ({ onPress, color, ...props }) => {
   );
 };
 
-const EditableTask = ({ task, moveTask, updateTask, deleteTask }) => {
-  const [value, setValue] = useState(task.text);
+const EditableItem = ({ item, moveItem, updateItem, deleteItem }) => {
+  const [value, setValue] = useState(item.text);
 
   return (
-    <View style={[styles.g, styles.hbox]}>
-      <View style={[styles.g, styles.hbox]}>
+    <View style={styles.item}>
+      <View style={styles.btnGroup}>
         <IcoBtn
           name="up arrow"
           uri={uri.up}
           color="blue"
-          onPress={(event) => moveTask(task, -1)}
+          onPress={(event) => moveItem(item, -1)}
         />
         <IcoBtn
           name="down arrow"
           uri={uri.down}
           color="green"
-          onPress={(event) => moveTask(task, 1)}
+          onPress={(event) => moveItem(item, 1)}
         />
       </View>
-      <View style={[{ flex: 8, marginHorizontal: 10 }]}>
+      <View style={styles.textInputContainer}>
         <TextInput
-          style={styles.g}
+          style={styles.textInput}
           onChangeText={setValue}
-          onBlur={(event) => updateTask(task)}
+          onBlur={(event) => updateItem(item)}
           value={value}
         />
       </View>
-      <View style={[styles.g, styles.hbox]}>
+      <View style={styles.btnGroup}>
         <IcoBtn
           name="close"
           uri={uri.close}
           color="red"
-          onPress={(event) => deleteTask(task)}
+          onPress={(event) => deleteItem(item)}
         />
       </View>
     </View>
   );
 };
 
-const TaskList = ({ tasks, moveTask, updateTask, deleteTask }) => {
-  const renderTask = (task) => {
+const ItemList = ({ items, moveItem, updateItem, deleteItem }) => {
+  const renderItem = ({ item }) => {
     return (
-      <EditableTask
-        key={task.id}
-        task={task}
-        moveTask={moveTask}
-        updateTask={updateTask}
-        deleteTask={deleteTask}
+      <EditableItem
+        item={item}
+        moveItem={moveItem}
+        updateItem={updateItem}
+        deleteItem={deleteItem}
       />
     );
   };
-  return (
-    <FlatList
-      style={styles.g}
-      data={tasks}
-      renderItem={({ item }) => renderTask(item)}
-    />
-  );
+  return <FlatList data={items} renderItem={renderItem} />;
 };
 
-const TaskInput = ({ createTask }) => {
+const ItemInput = ({ label, createItem }) => {
   const [value, setValue] = useState("");
 
   const handleSubmit = () => {
-    createTask({ id: Date.now().toString(), text: value });
+    createItem({ id: Date.now().toString(), text: value });
     setValue("");
   };
 
   return (
-    <View style={styles.g}>
+    <View style={styles.textInputContainer}>
       <TextInput
-        style={styles.g}
-        placeholder="Add a task..."
+        style={[styles.textInput, styles.mainInput]}
+        placeholder={`Add ${label}...`}
         blurOnSubmit={false}
         onChangeText={setValue}
         onSubmitEditing={handleSubmit}
@@ -127,75 +116,159 @@ const TaskInput = ({ createTask }) => {
   );
 };
 
+const H1 = ({ children, ...props }) => (
+  <Text style={styles.h1} {...props}>
+    {children}
+  </Text>
+);
+
+const ScrollContainer = ({ style, children }) => (
+  <ScrollView style={[styles.container, style]}>{children}</ScrollView>
+)
+
+const Row = ({ style, children }) => (
+  <View style={[styles.row, style]}>{children}</View>
+)
+
+const Col = ({ style, children }) => (
+  <View style={[styles.col, style]}>{children}</View>
+)
+
 const App = () => {
   const [tasks, setTasks] = useState([]);
+  const [notes, setNotes] = useState([]);
 
-  const createTask = (task) => {
-    if (task.text) setTasks([...tasks, task]);
+  const createTask = (task) => createItem(tasks, setTasks, task);
+  const createNote = (note) => createItem(notes, setNotes, note);
+  const createItem = (items, setItems, item) => {
+    if (item.text) setItems([...items, item]);
   };
 
-  const updateTask = (task) => {
-    const newTasks = [...tasks];
-    const idx = tasks.findIndex((x) => x.id === task.id);
-    const newTask = {
-      id: task.id,
-      text: task.text
+  const updateTask = (task) => updateItem(tasks, setTasks, task);
+  const updateNote = (note) => updateItem(notes, setNotes, note);
+  const updateItem = (items, setItems, item) => {
+    const newItems = [...items];
+    const idx = items.findIndex((x) => x.id === item.id);
+    const newItem = {
+      id: item.id,
+      text: item.text
     };
-    newTasks[idx] = newTask;
-    setTasks(newTasks);
+    newItems[idx] = newItem;
+    setItems(newItems);
   };
 
-  const deleteTask = (task) => setTasks(tasks.filter((t) => t.id !== task.id));
+  const deleteTask = (task) => deleteItem(tasks, setTasks, task);
+  const deleteNote = (note) => deleteItem(notes, setNotes, note);
+  const deleteItem = (items, setItems, item) =>
+    setItems(items.filter((x) => x.id !== item.id));
 
-  const moveTask = (task, dir) => {
-    const idx = tasks.findIndex((x) => x.id === task.id);
-    if ((idx === 0 && dir === -1) || (idx === tasks.length - 1 && dir === 1)) {
+  const moveTask = (task) => moveItem(tasks, setTasks, task);
+  const moveNote = (note) => moveItem(notes, setNotes, note);
+  const moveItem = (items, setItems, item, dir) => {
+    // console.log("move item")
+    // console.log("items: ", items)
+    // console.log("setItems: ", setItems)
+    // console.log("item: ", item)
+    // console.log("dir: ", dir)
+    const idx = items.findIndex((x) => x.id === item.id);
+    if ((idx === 0 && dir === -1) || (idx === items.length - 1 && dir === 1)) {
       return;
     }
-    const newTasks = [...tasks];
-    const tmp = newTasks[idx + dir];
-    newTasks[idx + dir] = newTasks[idx];
-    newTasks[idx] = tmp;
-    setTasks(newTasks);
+    const newItems = [...items];
+    const tmp = newItems[idx + dir];
+    newItems[idx + dir] = newItems[idx];
+    newItems[idx] = tmp;
+    setItems(newItems);
   };
 
   return (
-    <ScrollView>
-      <TaskList
-        tasks={tasks}
-        moveTask={moveTask}
-        updateTask={updateTask}
-        deleteTask={deleteTask}
-      />
+    <ScrollContainer>
+      <Row>
+        <Col>
+          <H1>Tasks</H1>
+          <View>
+            <ItemInput label="a task" createItem={createTask} />
+          </View>
+          <ItemList
+            items={tasks}
+            moveItem={moveTask}
+            updateItem={updateTask}
+            deleteItem={deleteTask}
+          />
+        </Col>
 
-      <View style={styles.g}>
-        <TaskInput createTask={createTask} />
-      </View>
-    </ScrollView>
+        <Col>
+          <H1>Notes</H1>
+          <View>
+            <ItemInput label="a note" createItem={createNote} />
+          </View>
+          <ItemList
+            items={notes}
+            moveItem={moveNote}
+            updateItem={updateNote}
+            deleteItem={deleteNote}
+          />
+        </Col>
+      </Row>
+    </ScrollContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  g: {
-    padding: 3,
-    margin: 3,
-    borderWidth: StyleSheet.hairlineWidth
+  container: {
+    flex: 1
   },
-  hbox: {
+  row: {
     flex: 1,
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
+    flexWrap: "wrap",
+    justifyContent: "center"
   },
-  vbox: {
+  col: {
+    flexShrink: 0,
+    flexGrow: 1,
+    minWidth: "20em",
+    maxWidth: "45em"
+  },
+  h1: {
+    fontWeight: "bold",
+    fontSize: "2em",
+    margin: 10,
+    marginTop: 20,
+    marginBottom: 5
+  },
+  textInputContainer: {
+    flexGrow: 1,
+    flexShrink: 1,
+    margin: 10
+  },
+  textInput: {
+    padding: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(0,0,0,0)"
+  },
+  mainInput: {
+    borderColor: "black"
+  },
+  item: {
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    margin: 10,
+    marginTop: 5
+  },
+  btnGroup: {
     flex: 1,
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center"
+    flexDirection: "row",
+    flexShrink: 1,
+    flexGrow: 0,
+    justifyContent: "space-evenly",
+    padding: 10,
+    marginHorizontal: 15,
   },
   ico: {
-    flex: 1,
-    height: "1em",
+    height: 20,
     padding: 10
   }
 });
