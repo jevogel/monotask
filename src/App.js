@@ -95,7 +95,7 @@ const ItemList = ({ items, moveItem, updateItem, deleteItem }) => {
   return <FlatList data={items} renderItem={renderItem} />;
 };
 
-const ItemInput = ({ label, createItem }) => {
+const ItemInput = ({ main, label, createItem }) => {
   const [value, setValue] = useState("");
 
   const handleSubmit = () => {
@@ -106,6 +106,7 @@ const ItemInput = ({ label, createItem }) => {
   return (
     <View style={styles.textInputContainer}>
       <TextInput
+        autoFocus={main}
         style={[styles.textInput, styles.mainInput]}
         placeholder={`Add ${label}...`}
         blurOnSubmit={false}
@@ -125,15 +126,15 @@ const Heading = ({ style, children, ...props }) => (
 
 const ScrollContainer = ({ style, children }) => (
   <ScrollView style={[styles.container, style]}>{children}</ScrollView>
-)
+);
 
 const Row = ({ style, children }) => (
   <View style={[styles.row, style]}>{children}</View>
-)
+);
 
 const Col = ({ style, children }) => (
   <View style={[styles.col, style]}>{children}</View>
-)
+);
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
@@ -179,15 +180,37 @@ const App = () => {
 
   return (
     <ScrollContainer>
-      <View style={{ flex: 1, flexDirection: "row", alignContent: "center", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth }}>
-        <Ico name="clipboard" uri={uri.clipboard} style={{ marginLeft: 20, flex: 1, flexGrow: 0, width: 20 }} />
-        <Heading style={{ margin: 20, marginRight: "auto", flex: 1, flexGrow: 0, fontSize: 28 }}>Monotask</Heading>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignContent: "center",
+          alignItems: "center",
+          borderBottomWidth: StyleSheet.hairlineWidth
+        }}
+      >
+        <Ico
+          name="clipboard"
+          uri={uri.clipboard}
+          style={{ marginLeft: 20, flex: 1, flexGrow: 0, width: 20 }}
+        />
+        <Heading
+          style={{
+            margin: 20,
+            marginRight: "auto",
+            flex: 1,
+            flexGrow: 0,
+            fontSize: 28
+          }}
+        >
+          Monotask
+        </Heading>
       </View>
       <Row>
         <Col>
           <Heading>Tasks</Heading>
           <View>
-            <ItemInput label="a task" createItem={createTask} />
+            <ItemInput main label="a task" createItem={createTask} />
           </View>
           <ItemList
             items={tasks}
@@ -237,38 +260,39 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 5
   },
-  textInputContainer: {
-    flexGrow: 1,
-    flexShrink: 1,
-    margin: 10
-  },
-  textInput: {
-    padding: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(0,0,0,0)"
-  },
+
   mainInput: {
     borderColor: "black"
   },
+
   item: {
-    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    justifyContent: "space-around",
     alignItems: "center",
-    margin: 10,
-    marginTop: 5
+    marginHorizontal: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: "lightgray"
   },
+
+  textInputContainer: {
+    flexGrow: 1,
+    margin: 10
+  },
+  textInput: {
+    padding: 5,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(0,0,0,0)"
+  },
+
   btnGroup: {
-    flex: 1,
+    flex: 0.5,
     flexDirection: "row",
     flexShrink: 1,
-    flexGrow: 0,
-    justifyContent: "space-evenly",
-    padding: 10,
-    marginHorizontal: 15,
+    justifyContent: "center",
+    margin: 5
   },
   ico: {
     height: 20,
+    width: 20,
     padding: 10
   }
 });
